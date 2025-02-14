@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: custom-scaling-daemonset
+spec:
+  selector:
+    matchLabels:
+      app: custom-scaling
+  template:
+    metadata:
+      labels:
+        app: custom-scaling
+    spec:
+      containers:
+        - name: custom-scaling-container
+          image: sreerajreddy/custom-scaling:v6
+          imagePullPolicy: IfNotPresent
+

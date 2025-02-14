@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: auto-scaling-pod-1-2
+spec:
+  containers:
+    - name: python-container
+      image: sreerajreddy/custom-scaling:v5
+      imagePullPolicy: IfNotPresent
+      
