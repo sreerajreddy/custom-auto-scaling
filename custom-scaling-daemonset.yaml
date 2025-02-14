@@ -13,6 +13,6 @@ spec:
     spec:
       containers:
         - name: custom-scaling-container
-          image: sreerajreddy/custom-scaling:v6
+          image: sreerajreddy/custom-scaling:v7
           imagePullPolicy: IfNotPresent
 
