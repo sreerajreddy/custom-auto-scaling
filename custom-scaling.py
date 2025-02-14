@@ -55,4 +55,6 @@ def monitor_and_update():
         update_custom_parameter(memory_usage) 
 
 schedule.every(2).minutes.do(monitor_and_update)  # Check every minute
-
+while True:
+    schedule.run_pending()
+    time.sleep(60)
