@@ -1,0 +1,42 @@
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: memory-monitor-script
+  namespace: kube-system
+data:
+  memory_monitor.sh: |
+    #!/bin/sh
+
+    HIGH_THRESHOLD=80
+    LOW_THRESHOLD=40
+    API_URL="https://api.e2enetworks.com/myaccount/api/v1/kubernetes/update-cluster-custom-parameter/15201/"
+    API_KEY="b6046693-2131-4c56-84fc-0531bf134a0e"
+    PROJECT_ID="34417"
+    AUTH_TOKEN="eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICJGSjg2R2NGM2pUYk5MT2NvNE52WmtVQ0lVbWZZQ3FvcXRPUWVNZmJoTmxFIn0.eyJleHAiOjE3Njg0ODExOTQsImlhdCI6MTczNjk0NTE5NCwianRpIjoiYWMyN2IwOTMtYmEwMi00NmI3LWI2NjYtNWNlZjRlNGI0YmVlIiwiaXNzIjoiaHR0cDovL2dhdGV3YXkuZTJlbmV0d29ya3MuY29tL2F1dGgvcmVhbG1zL2FwaW1hbiIsImF1ZCI6ImFjY291bnQiLCJzdWIiOiI1YTAxNTk3My00MzNlLTRlMjItYjYwZi0yYzJmZWRjMGU0YTMiLCJ0eXAiOiJCZWFyZXIiLCJhenAiOiJhcGltYW51aSIsInNlc3Npb25fc3RhdGUiOiIwMzNiYzhiZC05ZmU3LTQwNWMtOTQwMi03Yjg2ZWYyYTZjZDMiLCJhY3IiOiIxIiwiYWxsb3dlZC1vcmlnaW5zIjpbIiJdLCJyZWFsbV9hY2Nlc3MiOnsicm9sZXMiOlsib2ZmbGluZV9hY2Nlc3MiLCJ1bWFfYXV0aG9yaXphdGlvbiIsImFwaXVzZXIiLCJkZWZhdWx0LXJvbGVzLWFwaW1hbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sInNjb3BlIjoicHJvZmlsZSBlbWFpbCIsInNpZCI6IjAzM2JjOGJkLTlmZTctNDA1Yy05NDAyLTdiODZlZjJhNmNkMyIsImVtYWlsX3ZlcmlmaWVkIjpmYWxzZSwibmFtZSI6IlkgUyIsInByaW1hcnlfZW1haWwiOiJ5cy5zcmVlcmFqQGUyZW5ldHdvcmtzLmNvbSIsImlzX3ByaW1hcnlfY29udGFjdCI6dHJ1ZSwicHJlZmVycmVkX3VzZXJuYW1lIjoieXMuc3JlZXJhakBlMmVuZXR3b3Jrcy5jb20iLCJnaXZlbl9uYW1lIjoiWSIsImZhbWlseV9uYW1lIjoiUyIsImVtYWlsIjoieXMuc3JlZXJhakBlMmVuZXR3b3Jrcy5jb20ifQ.Fks9aBY_oDmrsJuhv_TEHhdNl0BL0bPlBICoGEIKhGJU6CiU3mvmEjxmZA-Dj8VsDVaXZy0E5ruRZdVY3DHAca-iSMeYYU89lrLgqaGem6wBsf1FZJ71HgFkvagcJGF5S08XayzYI3jTUqTrbzryjxoAWTlvopOeQbXbpByuFg8"
+
+    # Get total and available memory
+    TOTAL_MEM=$(grep MemTotal /proc/meminfo | awk '{print $2}')
+    AVAILABLE_MEM=$(grep MemAvailable /proc/meminfo | awk '{print $2}')
+
+    # Calculate memory usage percentage
+    USED_MEM=$((TOTAL_MEM - AVAILABLE_MEM))
+    MEM_USAGE=$((USED_MEM * 100 / TOTAL_MEM))
+
+    echo "Memory Utilization: ${MEM_USAGE}%"
+
+    # Check utilization thresholds and make API call
+    if [ "$MEM_USAGE" -ge "$HIGH_THRESHOLD" ]; then
+      echo "High memory usage detected! Sending API request..."
+      curl -L -X PUT "$API_URL?apikey=$API_KEY&project_id=$PROJECT_ID" \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Bearer $AUTH_TOKEN" \
+        -d '{"name": "MEMORY_THRESHOLD", "value": "HIGH"}'
+    elif [ "$MEM_USAGE" -le "$LOW_THRESHOLD" ]; then
+      echo "Low memory usage detected! Sending API request..."
+      curl -L -X PUT "$API_URL?apikey=$API_KEY&project_id=$PROJECT_ID" \
+        -H "Content-Type: application/json" \
+        -H "Authorization: Bearer $AUTH_TOKEN" \
+        -d '{"name": "MEMORY_THRESHOLD", "value": "LOW"}'
+    fi
+
