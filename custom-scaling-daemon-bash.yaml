@@ -13,13 +13,38 @@ spec:
         app: memory-monitor
     spec:
       hostPID: true
-      containers:
-        - name: memory-checker
-          image: bash:latest  # Lightweight container
-          command: ["/bin/sh", "-c", "apk add --no-cache curl && chmod +x /app/memory_monitor.sh && while true; do /app/memory_monitor.sh; sleep 300; done"]
+      initContainers:
+        - name: copy-script
+          image: alpine:latest
+          command: ["/bin/sh", "-c", "apk add --no-cache curl && cp /app/memory_monitor.sh /tmp/memory_monitor.sh && chmod +x /tmp/memory_monitor.sh"]
           volumeMounts:
             - name: scripts
               mountPath: /app
+            - name: script-storage
+              mountPath: /tmp
+      containers:
+        - name: memory-checker
+          image: alpine:latest
+          command: ["/bin/sh", "-c", "apk add --no-cache curl && while true; do /tmp/memory_monitor.sh; sleep 300; done"]
+          volumeMounts:
+            - name: script-storage
+              mountPath: /tmp
+          env:
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: memory-monitor-secret
+                  key: api_key
+            - name: PROJECT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: memory-monitor-secret
+                  key: project_id
+            - name: AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: memory-monitor-secret
+                  key: auth_token
           resources:
             requests:
               memory: "50Mi"
@@ -31,7 +56,7 @@ spec:
         - name: scripts
           configMap:
             name: memory-monitor-script
+        - name: script-storage
+          emptyDir: {}  # Temporary writable storage
       restartPolicy: Always
-
-        
 

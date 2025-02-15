@@ -31,12 +31,9 @@ data:
       curl -L -X PUT "$API_URL?apikey=$API_KEY&project_id=$PROJECT_ID" \
         -H "Content-Type: application/json" \
         -H "Authorization: Bearer $AUTH_TOKEN" \
-        -d '{"name": "MEMORY_THRESHOLD", "value": "HIGH"}'
+        -d '{"name": "MEMORY_THRESHOLD", "value": "$MEM_USAGE"}'
     elif [ "$MEM_USAGE" -le "$LOW_THRESHOLD" ]; then
       echo "Low memory usage detected! Sending API request..."
-      curl -L -X PUT "$API_URL?apikey=$API_KEY&project_id=$PROJECT_ID" \
-        -H "Content-Type: application/json" \
-        -H "Authorization: Bearer $AUTH_TOKEN" \
-        -d '{"name": "MEMORY_THRESHOLD", "value": "LOW"}'
+      curl -L -X PUT "$API_URL?apikey=$API_KEY&project_id=$PROJECT_ID"  -H "Content-Type: application/json"   -H "Authorization: Bearer $AUTH_TOKEN"   -d '{"name": "MEMORY_THRESHOLD", "value": "$MEM_USAGE"}'
     fi
 
